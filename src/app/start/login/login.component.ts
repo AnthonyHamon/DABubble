@@ -421,6 +421,29 @@ export class LoginComponent implements OnDestroy, OnInit {
     this.showLoginInfoTime = new Date().getTime();
   }
 
+   /**
+   * Validates the provided email and password credentials against the 'users' collection in Firestore.
+   *
+   * If the email does not exist in the 'users' collection, the `errorEmail` property is set to 'Diese Email-Adresse existiert nicht.'.
+   * If the email exists but the password is incorrect, the `errorPassword` property is set to 'Falsches Passwort eingegeben.'.
+   *
+   * @param email - The email address to validate.
+   * @param password - The password to validate.
+   */
+   private async validateCredentials(email: string, password: string) {
+    const usersRef = collection(this.firestore, 'users');
+    const q = query(usersRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      this.errorEmail = 'Diese Email-Adresse existiert nicht.';
+      this.errorPassword = '';
+    } else {
+      this.errorEmail = '';
+      this.errorPassword = 'Falsches Passwort eingegeben.';
+    }
+  }
+
   /**
    * Handles login errors by setting appropriate error messages based on the error code.
    *
@@ -439,6 +462,11 @@ export class LoginComponent implements OnDestroy, OnInit {
       this.errorPassword = 'Falsches Passwort.';
     } else if (error.includes('auth/popup-closed-by-user')) {
       this.errorGoogleSignin = 'Anmeldung durch Benutzer abgebrochen.';
+    } 
+    else if (error.includes('auth/invalid-credential')) {
+      const email = this.loginForm.get('email')?.value || '';
+      const password = this.loginForm.get('password')?.value || '';
+      this.validateCredentials(email, password);
     } else if (error.includes('auth/google-signin-error-name-email-missing')) {
       this.errorGoogleSignin =
         'Anmeldung fehlgeschlagen. Name & E-Mail unbekannt.';
