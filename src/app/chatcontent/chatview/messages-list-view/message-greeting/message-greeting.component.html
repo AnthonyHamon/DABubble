@@ -1,4 +1,10 @@
 <main>
+  @if(userService.currentUserID === adminBotID) {
+    <div class="admin-div">
+      <button (click)="addUsers()">User Anlegen</button>
+      <button (click)="injectFrontEndMessages()">Frontend Messages injekten</button>
+    </div>
+  }
   <h2>Willkommen bei DABubble!</h2>
   <p>
     Herzlich willkommen bei DABubble, deiner neuen Kommunikationsplattform, die dir auf intuitive und spaßige Weise
