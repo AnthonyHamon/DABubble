@@ -13,7 +13,7 @@ $reactions-gap: clamp(0.325rem, 0.667vw + -0.175rem, 0.625rem);
 }
 
 .emoji-div {
-  @include nunito(0.875, 400, black);
+  @include nunito(1.5, 400, black);
 }
 
 .self-reaction {
