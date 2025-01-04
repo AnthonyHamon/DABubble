@@ -7,6 +7,7 @@ import { Channel } from '../../shared/models/channel.class';
 import { Chat } from '../../shared/models/chat.class';
 import { EmojipickerService } from './emojipicker.service';
 import { getMessagePath, getObjectsPath, removeAllHTMLTagsFromString } from '../firebase/utils';
+import { ChannelService } from './channel.service';
 
 export type MessageAttachment = {
   name: string;
@@ -25,6 +26,7 @@ export class MessageService {
   private userservice = inject(UsersService);
   private emojiService = inject(EmojipickerService);
   private storage = getStorage();
+  private channelService = inject(ChannelService);
 
 
   /**
@@ -296,14 +298,37 @@ export class MessageService {
    * @param searchQuery - The search query to use for finding matching messages.
    * @returns A Promise that resolves to an array of `Message` objects that match the search query.
    */
-  async searchMessages(searchQuery: string, messagesPath: string): Promise<Message[]> {
+  async searchMessages(
+    searchQuery: string,
+    messagesPath: string
+  ): Promise<Message[]> {
     const searchLower = searchQuery.toLowerCase();
+
     if (messagesPath === '') {
-      const messagesRef = collectionGroup(this.firestore, 'messages');
-      const q = query(messagesRef, orderBy('createdAt', 'desc'), limit(100));
-      const querySnapshot = await getDocs(q);
-      return await this.getMessagesFromQuerySnapshot(querySnapshot, searchLower);
+      // Globale Suche über alle zugänglichen Messages
+      const channels = this.channelService.channels;
+      const chats = this.channelService.chats.filter((chat) =>
+        chat.memberIDs.includes(this.userservice.currentUserID)
+      );
+
+      const messagePaths = [
+        ...channels.map((channel) => channel.channelMessagesPath),
+        ...chats.map((chat) => chat.chatMessagesPath),
+      ].filter((path) => path !== '');
+
+      const results = await Promise.all(
+        messagePaths.map(async (path) => {
+          const colRef = collection(this.firestore, path);
+          const docs = await getDocs(colRef);
+          return this.getMessagesFromQuerySnapshot(docs, searchLower);
+        })
+      );
+
+      return results
+        .flat()
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     } else {
+      // Kontext-basierte Suche (bleibt unverändert)
       const colRef = collection(this.firestore, messagesPath);
       const allDocs = await getDocs(colRef);
       return await this.getMessagesFromQuerySnapshot(allDocs, searchLower);
