@@ -1,15 +1,11 @@
 import {
   Component,
-  EventEmitter,
   inject,
   Input,
   OnInit,
-  Output,
 } from '@angular/core';
-import { MessageDateComponent } from './messages-list-view/message-date/message-date.component';
 import { MessageTextareaComponent } from '../message-textarea/message-textarea.component';
 import { CommonModule } from '@angular/common';
-import { MessageComponent } from './messages-list-view/message/message.component';
 import { PopoverChannelEditorComponent } from './popover-chatview/popover-channel-editor/popover-channel-editor.component';
 import { PopoverChannelMemberOverviewComponent } from './popover-chatview/popover-channel-member-overview/popover-channel-member-overview.component';
 import { NavigationService } from '../../utils/services/navigation.service';
@@ -23,7 +19,6 @@ import { AvatarDirective } from '../../utils/directives/avatar.directive';
 import { PopoverMemberProfileComponent } from './popover-chatview/popover-member-profile/popover-member-profile.component';
 import { BehaviorSubject } from 'rxjs';
 import { ChannelService } from '../../utils/services/channel.service';
-import { User } from '../../shared/models/user.class';
 import { ifChatWhitSelf } from '../../utils/firebase/utils';
 
 @Component({
@@ -31,8 +26,6 @@ import { ifChatWhitSelf } from '../../utils/firebase/utils';
   standalone: true,
   imports: [
     CommonModule,
-    MessageDateComponent,
-    MessageComponent,
     MessageTextareaComponent,
     PopoverChannelEditorComponent,
     PopoverChannelMemberOverviewComponent,
